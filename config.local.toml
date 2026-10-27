@@ -1,0 +1,65 @@
+# Copy to config.local.toml. Never commit the local file or real secrets.
+[app]
+mode = "demo" # demo uses explicitly synthetic data and deterministic example planning
+secret_env = "HKELI_SESSION_SECRET"
+job_workers = 2
+max_jobs = 16
+job_ttl_seconds = 900
+max_export_bytes = 64000000
+max_rows = 250000
+max_result_rows = 200
+duckdb_memory = "256MB"
+calculation_timeout_seconds = 30
+secure_cookie = false # true behind production HTTPS
+
+[stork]
+one_bank_id_env = "One_Bank_ID"
+one_bank_password_env = "One_BANK_PASSWORD"
+ssl_cert_file_env = "SSL_CERT_FILE"
+adapter = "app.integrations.vertex_adapter:generate"
+model = "gemini-3.5-flash" # user-supplied working private SDK model identifier
+timeout_seconds = 30
+
+[tableau]
+server = "" # trusted HTTPS origin only
+site = "" # default site allowed
+api_version = "3.28"
+client_id = ""
+secret_id = ""
+secret_value_env = "TABLEAU_CONNECTED_SECRET_VALUE"
+ca_bundle_env = "TABLEAU_CA_BUNDLE"
+
+# Application entitlement registry; Tableau must ALSO enforce permissions / row security.
+[[dashboards]]
+key = "hk-sales"
+label = "HK Sales ELI"
+countries = ["HK"]
+lines_of_business = ["sales"]
+workbook_name = "" # exact published workbook name in live mode
+dashboard_view_name = "" # exact published dashboard name in live mode
+# Only author-verified worksheet membership belongs here. Blank = no live worksheets.
+worksheet_names = []
+additive_columns = ["Notional HKD"]
+date_columns = ["Maturity Date"]
+snapshot_columns = [] # approved snapshot axes; never sum across these dates
+# Exact worksheet -> supported filter values. Never infer from a question.
+[dashboards.filters]
+# "Client Holdings" = {Status = ["Active", "Matured"]}
+
+# Demo identities only. Live mode disables mock login and requires an identity resolver.
+[identity]
+resolver = "" # module:function taking Flask request -> server-verified identity dict
+
+[[users]]
+id = "hk-sales-user"
+name = "Hong Kong Sales"
+country = "HK"
+line_of_business = "sales"
+tableau_username = "" # exact provisioned username for live integration
+
+[[users]]
+id = "sg-sales-user"
+name = "Singapore Sales"
+country = "SG"
+line_of_business = "sales"
+tableau_username = ""
