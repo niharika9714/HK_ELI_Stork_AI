@@ -1,0 +1,10 @@
+{
+  "catalog_id": "synthetic-mock-ui-only",
+  "schema_version": "1.1",
+  "views": [
+    {"record_id":"mock-holdings","workbook_content_url":"MOCK_UI","view_name":"Client Holdings","verified_export":true,"grain":"Synthetic fixture row; not real positions.","source_document":"views/holdings.md","purpose":"Offline fixture for UI scenarios; production selection uses Stork.","columns":{"Client ID":{"type":"text"},"Product":{"type":"text"},"Sub-product":{"type":"text"},"Sector":{"type":"text"},"Notional HKD":{"type":"number","unit":"hkd","additive":true},"Status":{"type":"text"},"Maturity Date":{"type":"date","date_role":"event"}},"filters":{}},
+    {"record_id":"mock-product","workbook_content_url":"MOCK_UI","view_name":"Product Mix","verified_export":false,"columns":{},"filters":{},"purpose":"Offline product chart placeholder."},
+    {"record_id":"mock-sector","workbook_content_url":"MOCK_UI","view_name":"Sector Mix","verified_export":false,"columns":{},"filters":{},"purpose":"Offline sector chart placeholder."}
+  ],
+  "concepts": []
+}

@@ -101,6 +101,8 @@ class Tableau:
                         raise ValueError('Invalid discovered Tableau view route.')
                     prefix = '/t/' + quote(self.settings['site'], safe='') if self.settings['site'] else ''
                     result.append({'id': view['id'], 'name': view['name'], 'dashboard': dashboard['key'],
+                                   'description': view.get('description', ''), 'sheet_type': view.get('sheetType', ''),
+                                   'workbook_content_url': matches[0]['contentUrl'],
                                    'url': self.server + prefix + '/views/' + quote(route, safe='/')})
         return result
 

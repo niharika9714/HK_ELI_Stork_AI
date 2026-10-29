@@ -12,6 +12,8 @@ from app.config import load_config
 from app.services.demo import export
 from app.services.analysis import Analysis
 from app.models import Plan
+from app.services.knowledge import Knowledge
+from app.services import demo
 
 
 class AppTests(unittest.TestCase):
@@ -75,7 +77,8 @@ class AppTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'synthetic.csv'
             export(path, 100000)
-            analysis = Analysis(path, self.config, self.config['dashboards'][0])
+            knowledge = Knowledge(self.config, self.config['dashboards'], demo.CATALOG, demo=True)
+            analysis = Analysis(path, self.config, knowledge.contract(demo.CATALOG[0]))
             try:
                 result = analysis.execute(Plan(action='analyze', measure='Notional HKD', aggregation='sum'))
                 expected = sum((i % 7 + 1) * 1000 for i in range(100000))

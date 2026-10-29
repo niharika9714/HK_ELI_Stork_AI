@@ -7,10 +7,18 @@ max_jobs = 16
 job_ttl_seconds = 900
 max_export_bytes = 64000000
 max_rows = 250000
+max_columns = 50
+max_cells = 5000000
 max_result_rows = 200
 duckdb_memory = "256MB"
 calculation_timeout_seconds = 30
 secure_cookie = false # true behind production HTTPS
+
+[knowledge]
+# Paths are relative to this application's directory, or administrator-provided absolute paths.
+demo_pack = "knowledge/mock-ui"
+max_characters = 80000 # complete selected-pack documents; no silent chunk truncation
+max_prompt_characters = 120000 # includes authorized view records and structured response schema
 
 [stork]
 one_bank_id_env = "One_Bank_ID"
@@ -39,12 +47,7 @@ workbook_name = "" # exact published workbook name in live mode
 dashboard_view_name = "" # exact published dashboard name in live mode
 # Only author-verified worksheet membership belongs here. Blank = no live worksheets.
 worksheet_names = []
-additive_columns = ["Notional HKD"]
-date_columns = ["Maturity Date"]
-snapshot_columns = [] # approved snapshot axes; never sum across these dates
-# Exact worksheet -> supported filter values. Never infer from a question.
-[dashboards.filters]
-# "Client Holdings" = {Status = ["Active", "Matured"]}
+knowledge_pack = "../knowledge/hkeli-demo" # live business/example pack; verify exports before numerical use
 
 # Demo identities only. Live mode disables mock login and requires an identity resolver.
 [identity]

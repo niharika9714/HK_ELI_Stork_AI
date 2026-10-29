@@ -1,0 +1,22 @@
+{
+  "catalog": [
+    {"id":"holdings","name":"Client Holdings","dashboard":"hk-sales","workbook_content_url":"MOCK_UI","url":null,"synthetic":true},
+    {"id":"product","name":"Product Mix","dashboard":"hk-sales","workbook_content_url":"MOCK_UI","url":null,"synthetic":true},
+    {"id":"sector","name":"Sector Mix","dashboard":"hk-sales","workbook_content_url":"MOCK_UI","url":null,"synthetic":true}
+  ],
+  "summary_plan":{"action":"analyze","view_id":"holdings","measure":"Notional HKD","aggregation":"sum"},
+  "scenarios":[
+    {"all":["show"],"any":["summary","summarize"],"plan":{"action":"native","view_id":"holdings","include_summary":true}},
+    {"any":["pnl","return","profit","coupon","risk"],"plan":{"action":"clarify","explanation":"This synthetic fixture has no approved metric definition for that question."}},
+    {"any":["compare","comparison","heatmap"],"plan":{"action":"analyze","view_id":"holdings","dimensions":["Product","Sector"],"measure":"Notional HKD","aggregation":"sum","chart":"heatmap"}},
+    {"any":["year"],"plan":{"action":"analyze","view_id":"holdings","measure":"Notional HKD","aggregation":"sum","period":"year","date_column":"Maturity Date","chart":"line"}},
+    {"any":["month"],"plan":{"action":"analyze","view_id":"holdings","measure":"Notional HKD","aggregation":"sum","period":"month","date_column":"Maturity Date","chart":"line"}},
+    {"any":["pie"],"plan":{"action":"analyze","view_id":"holdings","dimensions":["Product"],"measure":"Notional HKD","aggregation":"sum","chart":"pie"}},
+    {"any":["aggregate","total","summary","summarize","indicator","sub-product"],"plan":{"action":"analyze","view_id":"holdings","dimensions":["Product"],"measure":"Notional HKD","aggregation":"sum","chart":"bar"}},
+    {"any":["active"],"plan":{"action":"analyze","view_id":"holdings","filters":[{"column":"Status","operator":"eq","value":"Active"}],"dimensions":["Product"],"measure":"Notional HKD","aggregation":"sum","chart":"bar"}},
+    {"any":["sector"],"plan":{"action":"native","view_id":"sector"}},
+    {"any":["product"],"plan":{"action":"native","view_id":"product"}},
+    {"any":["show","holdings","dashboard"],"plan":{"action":"native","view_id":"holdings"}}
+  ],
+  "fallback":{"action":"clarify","explanation":"Please name a view, metric, filter or comparison. Offline scenarios are illustrative, not a language model."}
+}

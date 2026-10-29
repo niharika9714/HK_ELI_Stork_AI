@@ -1,8 +1,10 @@
 import csv
-from ..models import Plan, Condition
+import json
+from ..models import Plan
+from ..config import ROOT
 
-CATALOG = [{'id': key, 'name': name, 'dashboard': 'hk-sales', 'url': None, 'synthetic': True}
-           for key, name in [('holdings', 'Client Holdings'), ('product', 'Product Mix'), ('sector', 'Sector Mix')]]
+FIXTURE = json.loads((ROOT / 'knowledge/mock-ui/scenarios.json').read_text(encoding='utf-8'))
+CATALOG = FIXTURE['catalog']
 
 
 def export(path, count=1000):
@@ -17,20 +19,11 @@ def export(path, count=1000):
 
 def plan(question):
     q = question.lower()
-    if 'show' in q and any(w in q for w in ('summary', 'summarize')):
-        return Plan(action='native', view_id='holdings', include_summary=True)
-    if any(word in q for word in ('pnl', 'return', 'profit', 'coupon', 'risk')):
-        return Plan(action='clarify', explanation='This synthetic fixture has no approved metric definition for that question.')
-    if any(word in q for word in ('compare', 'comparison', 'heatmap')):
-        return Plan(action='analyze', view_id='holdings', dimensions=['Product', 'Sector'], measure='Notional HKD', aggregation='sum', chart='heatmap')
-    if 'year' in q or 'month' in q:
-        return Plan(action='analyze', view_id='holdings', measure='Notional HKD', aggregation='sum',
-                    period='year' if 'year' in q else 'month', date_column='Maturity Date', chart='line')
-    if any(word in q for word in ('pie', 'aggregate', 'total', 'summary', 'summarize', 'indicator', 'sub-product')):
-        return Plan(action='analyze', view_id='holdings', dimensions=['Product'], measure='Notional HKD', aggregation='sum', chart='pie' if 'pie' in q else 'bar')
-    filters = [Condition(column='Status', operator='eq', value='Active')] if 'active' in q else []
-    if filters:
-        return Plan(action='analyze', view_id='holdings', filters=filters, dimensions=['Product'], measure='Notional HKD', aggregation='sum', chart='bar')
-    if any(word in q for word in ('show', 'holdings', 'product', 'sector', 'dashboard')):
-        return Plan(action='native', view_id='sector' if 'sector' in q else 'product' if 'product' in q else 'holdings')
-    return Plan(action='clarify', explanation='Please name a view, metric, filter or comparison. Demo planning supports the example queries only.')
+    for scenario in FIXTURE['scenarios']:
+        if all(word in q for word in scenario.get('all', [])) and any(word in q for word in scenario.get('any', [])):
+            return Plan.model_validate(scenario['plan'])
+    return Plan.model_validate(FIXTURE['fallback'])
+
+
+def summary_plan(view_id, filters):
+    return Plan.model_validate(FIXTURE['summary_plan'] | {'view_id': view_id, 'filters': [f.model_dump() for f in filters]})

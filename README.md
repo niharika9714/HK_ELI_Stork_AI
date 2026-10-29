@@ -2,6 +2,8 @@
 
 Separate application; existing Dify workflows are unchanged. Python 3.11+.
 
+Business knowledge now feeds the existing source-selection Stork call alongside every authorized candidate. Full-export DuckDB analysis is tested with 100,000 rows. Follow [knowledge setup and validation](docs/knowledge-and-large-data.md) to merge settings into an existing local configuration without resetting it.
+
 ## Run the synthetic mock UI
 
 From the HKELI workspace in PowerShell:
@@ -53,7 +55,7 @@ Provision `One_Bank_ID`, `One_BANK_PASSWORD`, `SSL_CERT_FILE` in the service env
 - Set a server-side identity resolver `module:function`. It receives the Flask request and returns a **verified** identity with `id`, `country`, `line_of_business` and `tableau_username`. It must validate SSO tokens/groups; do not trust unsigned browser headers or user-entered identity fields. Mock login is disabled in live mode. An actual corporate SSO adapter cannot be supplied without its issuer/audience/claims contract.
 - The country/LOB registry restricts discovery before the LLM sees metadata. Only selected authorized dashboards enter the plan. Discovery uses paginated workbooks, exact unique names, then workbook views restricted by the author-approved dashboard membership list.
 - Tableau REST and embedding both use the mapped user's identity. **Actual row-level entitlements must be enforced in Tableau's published content/data policy** as well as dashboard access. Do not use a shared administrator Tableau subject to bypass that policy.
-- Configure exact additive metrics, date fields, snapshot axes and supported per-view filters. Live registry values are administrator assertions that need verification; the example synthetic definitions must be replaced for real data.
+- Configure a knowledge pack per dashboard. Verified per-view knowledge contracts define additive metrics, date roles and supported filters; dashboard-level metric lists are superseded. Example published exports remain unverified until checked against actual Tableau exports.
 - Set the Connected App embedding-domain/project allowlist for the new frontend origin. The frontend dynamically loads Embedding API v3 from the server-discovered Tableau origin. Only an embed JWT reaches the browser, fetched separately from saved chat answers. REST sessions close in `finally`; failures never trigger PAT fallback.
 - `TABLEAU_CA_BUNDLE` may be blank for default verified roots, an approved absolute CA path or inline PEM text. The existing verified transport was copied into the standalone app and adapted to allow absolute Windows paths. Stork's `SSL_CERT_FILE` is independent.
 
