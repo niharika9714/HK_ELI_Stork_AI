@@ -2,6 +2,34 @@
 
 The Flask framework, controller/service structure, job queue and existing Stork adapter are retained. Dify files are unchanged.
 
+## Local single-user login with real integrations
+
+Merge into the existing configuration (do not duplicate TOML sections):
+
+```toml
+[app]
+mode = "live"
+secure_cookie = false # localhost HTTP testing only
+
+[identity]
+resolver = ""
+local_test_enabled = true
+local_test_tableau_username_env = "TABLEAU_CONNECTED_USERNAME"
+local_test_country = "HK"
+local_test_line_of_business = "sales"
+```
+
+Country/business values must match the configured dashboard entitlements. Set `TABLEAU_CONNECTED_USERNAME` to your provisioned Tableau username in the service environment. Keep the persistent session secret, Stork credentials, Tableau Connected App secret and certificate variables configured. On Mac zsh:
+
+```bash
+export TABLEAU_CONNECTED_USERNAME="your-tableau-username"
+python3 run.py
+```
+
+Open `http://127.0.0.1:8020` and click **Sign in for local testing**. This login uses one server-configured identity, with real discovery, Stork planning and Tableau exports/embedding. It does not use synthetic demo scenarios. The server ignores browser-supplied identity fields and retains CSRF protection and dashboard authorization.
+
+This intentionally permits any local user who can access the application to sign in as that configured test identity. Keep the service bound to loopback; direct localhost peer and Host are required, and forwarded/proxy requests are rejected. Do not expose it using tunnels or a reverse proxy. Set `local_test_enabled=false` and configure the corporate resolver for deployment. No automatic fallback from corporate login is enabled.
+
 ## Connect a business knowledge pack
 
 Merge these settings into your existing `config.local.toml`; do not replace your configured credentials or identity settings:

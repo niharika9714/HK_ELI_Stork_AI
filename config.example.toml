@@ -52,6 +52,10 @@ knowledge_pack = "../knowledge/hkeli-demo" # live business/example pack; verify 
 # Demo identities only. Live mode disables mock login and requires an identity resolver.
 [identity]
 resolver = "" # module:function taking Flask request -> server-verified identity dict
+local_test_enabled = false # explicitly enable only for direct localhost testing in live mode
+local_test_tableau_username_env = "TABLEAU_CONNECTED_USERNAME"
+local_test_country = "" # match an authorized dashboard registry country
+local_test_line_of_business = "" # match its line of business
 
 [[users]]
 id = "hk-sales-user"

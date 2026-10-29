@@ -1,7 +1,7 @@
 import secrets
 import hmac
 from flask import Blueprint, current_app, jsonify, render_template, request, session
-from ..services.identity import current_user, allowed_dashboards, authorize
+from ..services.identity import current_user, allowed_dashboards, authorize, local_test_enabled, require_local_request, local_test_user
 from ..services.orchestrator import run
 from ..integrations.tableau import Tableau
 
@@ -14,6 +14,8 @@ def config():
 
 @bp.before_request
 def csrf():
+    if local_test_enabled(config()):
+        require_local_request()
     if request.method == 'POST' and not hmac.compare_digest(request.headers.get('X-CSRF-Token', ''), session.get('csrf', '!')):
         raise PermissionError('Invalid CSRF token. Reload the page.')
 
@@ -27,11 +29,17 @@ def index():
 def bootstrap():
     session.setdefault('csrf', secrets.token_urlsafe(32))
     profiles = [{k: u[k] for k in ('id', 'name', 'country', 'line_of_business')} for u in config()['users']] if config()['app']['mode'] == 'demo' else []
-    return jsonify(csrf=session['csrf'], mode=config()['app']['mode'], profiles=profiles)
+    return jsonify(csrf=session['csrf'], mode=config()['app']['mode'], profiles=profiles, local_test=local_test_enabled(config()))
 
 
 @bp.post('/api/login')
 def login():
+    if local_test_enabled(config()):
+        require_local_request()
+        local_test_user(config())
+        session.clear()
+        session.update(local_test_login=True, csrf=secrets.token_urlsafe(32))
+        return jsonify(csrf=session['csrf'])
     if config()['app']['mode'] != 'demo':
         raise PermissionError('Mock login is disabled; use the approved SSO integration.')
     user_id = (request.get_json() or {}).get('user_id')
