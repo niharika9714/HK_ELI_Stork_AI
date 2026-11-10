@@ -2,14 +2,13 @@ from flask import request, session
 from ..config import plugin
 import os
 import ipaddress
-
+from urllib.parse import urlsplit
 
 def local_test_enabled(config):
     return config['app']['mode'] == 'live' and config.get('identity', {}).get('local_test_enabled') is True
 
 
 def require_local_request():
-    from urllib.parse import urlsplit
     try:
         local_peer = ipaddress.ip_address(request.remote_addr or '').is_loopback
     except ValueError:

@@ -33,13 +33,25 @@ def plan(config, question, catalog, profile=None, knowledge=None):
         'original_user_question': question, 'catalog': catalog, 'profile': profile,
         'business_knowledge_reference_only': knowledge or {},
         'schema': schema.model_json_schema(), 'original_user_question_repeated': question}, ensure_ascii=False)
-    if len(prompt) > config.get('knowledge', {}).get('max_prompt_characters', 120000):
+    if len(prompt) > config.get('knowledge', {}).get('max_prompt_characters', 1000000):
         raise ValueError('Full scoped source/knowledge context exceeds prompt budget; narrow dashboard selection. No candidates were silently omitted.')
     response = plugin(settings['adapter'])({**settings, **credentials}, prompt)
     if not isinstance(response, str) or len(response) > 16000:
         raise ValueError('Invalid Stork response size/type.')
     # Exact canonical boolean strings are a known provider serialization issue.
-    raw = json.loads(response)
+    cleaned = response.strip()
+    for prefix in ("```json","```"):
+        if cleaned.startswith(prefix):
+            cleaned = cleaned[len(prefix):]
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3]
+    cleaned = cleaned.strip()
+    try:
+        raw= json.loads(cleaned)
+    except Exception as e:
+        print("Failed Json: ")
+        print(repr(cleaned))
+        raise
     for key in ('include_summary',):
         if raw.get(key) in ('true', 'false'):
             raw[key] = raw[key] == 'true'

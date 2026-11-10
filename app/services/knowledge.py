@@ -24,11 +24,11 @@ class Knowledge:
             source = directory / 'catalog.json'
             if not source.is_file():
                 raise ValueError('Configured knowledge catalog is missing; no definitions were invented.')
-            if source.stat().st_size > settings.get('max_characters', 80000) * 4:
+            if source.stat().st_size > settings.get('max_characters', 1000000) * 4:
                 raise ValueError('Knowledge catalog exceeds configured capacity.')
             raw = source.read_text(encoding='utf-8')
             total += len(raw)
-            if total > settings.get('max_characters', 80000):
+            if total > settings.get('max_characters', 1000000):
                 raise ValueError('Selected knowledge exceeds the configured budget; narrow dashboard selection. No documents were truncated.')
             pack = json.loads(raw)
             scoped_views = [v for v in catalog if v['dashboard'] == dashboard_key]
@@ -58,11 +58,11 @@ class Knowledge:
                     resolved = document.resolve()
                     if not resolved.is_relative_to(directory):
                         raise ValueError('Knowledge document resolves outside its configured pack.')
-                    if document.stat().st_size > settings.get('max_characters', 80000) * 4:
+                    if document.stat().st_size > settings.get('max_characters', 1000000) * 4:
                         raise ValueError('Knowledge document exceeds configured capacity.')
                     content = document.read_text(encoding='utf-8')
                     total += len(content)
-                    if total > settings.get('max_characters', 80000):
+                    if total > settings.get('max_characters', 1000000):
                         raise ValueError('Selected knowledge exceeds budget; no document was truncated.')
                     self.documents.append({'dashboard': dashboard_key, 'reference': document.relative_to(directory).as_posix(), 'content': content})
         self.concepts = list(concepts.values())
@@ -71,17 +71,11 @@ class Knowledge:
     def _validate_contract(record):
         if type(record.get('verified_export', False)) is not bool:
             raise ValueError('verified_export must be a JSON boolean.')
-        if not isinstance(record.get('columns', {}), dict) or not isinstance(record.get('filters', {}), dict):
-            raise ValueError('Invalid knowledge contract.')
-        for name, rule in record.get('columns', {}).items():
-            if not isinstance(name, str) or rule.get('type') not in ('text', 'number', 'date'):
-                raise ValueError('Invalid knowledge column type.')
-            if type(rule.get('additive', False)) is not bool:
-                raise ValueError('Additivity must be a JSON boolean.')
-            if rule.get('date_role', 'unknown') not in ('event', 'reference', 'snapshot', 'unknown'):
-                raise ValueError('Invalid configured date role.')
-            if rule.get('unit') == 'percentage' and rule.get('additive', False):
-                raise ValueError('Percentage additivity is unsupported.')
+        if not isinstance(record.get('columns', []), list):
+            raise ValueError('Invalid knowledge column.')
+        if not isinstance(record.get('filters', []), list):
+            raise ValueError('Invalid knowledge filter.')
+        
 
     def record(self, view):
         return self.records.get((view['dashboard'], view['id']), {})
@@ -95,7 +89,23 @@ class Knowledge:
 
     def contract(self, view):
         record = self.record(view)
-        return record if record.get('verified_export') else {'columns': {}, 'verified_export': False}
+        if not record.get("verified_export"):
+            return {"columns": {},"filter":{}, "verified_export": False}
+        converted_filters={}
+        for f in record.get("filters", []):
+            field = f.get("field")
+            value = f.get("value")
+            if field:
+                converted_filters.setdefault(field, [])
+                if value is not None:
+                    if isinstance(value, list):
+                        converted_filters[field].extend(value)
+                    else:
+                        converted_filters[field].append(value)
+        return {
+            **record,
+            "filters": converted_filters
+        }
 
     def references(self, view):
         record = self.record(view)

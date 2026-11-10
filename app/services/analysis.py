@@ -2,7 +2,7 @@ import duckdb
 import threading
 import csv
 from pathlib import Path
-
+from decimal import Decimal
 
 def identifier(value, columns):
     if value not in columns:
@@ -124,7 +124,6 @@ class Analysis:
         if chart != 'table':
             if not plan.measure or not dims or any(v is None for row in rows for v in row.values()):
                 raise ValueError('Chart requires complete dimensions and measure; clarify missing-value policy.')
-            from decimal import Decimal
             values = [Decimal(row['value']) for row in rows]
             keys = [tuple(row[k] for k in names[:-1]) for row in rows]
             if len(set(keys)) != len(keys):

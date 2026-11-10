@@ -115,4 +115,5 @@ def embed_token():
     client = Tableau(config(), user)
     if data.get('view_id') not in {v['id'] for v in client.catalog(dashboards)}:
         raise PermissionError('The view is outside your selected dashboards.')
-    return jsonify(token=client.jwt(['tableau:views:embed']), expires_in=300)
+    token=client.jwt(['tableau:views:embed'])
+    return jsonify(token=token, expires_in=300)

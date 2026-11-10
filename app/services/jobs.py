@@ -2,6 +2,7 @@ import secrets
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
+import traceback
 
 
 class Jobs:
@@ -38,5 +39,7 @@ class Jobs:
             return {'status': 'failed', 'code': 'access_denied', 'message': str(error)}
         except ValueError as error:
             return {'status': 'failed', 'code': 'missing_data_or_unsupported_operation', 'message': str(error)}
-        except Exception:
-            return {'status': 'failed', 'code': 'integration_failed', 'message': 'The integration or calculation failed. No substitute chart was produced.'}
+        except Exception as e:
+            print ("TYPE:", type(e), str(e))
+            traceback.print_exc()
+            return {'status': 'failed', 'code': 'integration_failed', 'message': 'The integration or calculation failed. No substitute chart was produced.'+ str(e)}
